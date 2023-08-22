@@ -1,4 +1,7 @@
-﻿create table exer.documento(
+﻿create database exercicio
+create schema exer
+
+create table exer.documento(
 	iddocumento serial primary key,
 	nrdocumento varchar(6) unique not null,
 	dtdocumento timestamp not null,
