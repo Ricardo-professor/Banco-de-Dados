@@ -1,7 +1,10 @@
+--create schema exerc 
+
 drop table if exists exerc.documento cascade;
 drop table if exists exerc.produto cascade;
 drop table if exists exerc.produto_doc cascade;
 drop table if exists exerc.cliente cascade;
+
 
 create table exerc.cliente(
     idcliente serial primary key,
@@ -115,13 +118,13 @@ UPDATE exerc.documento SET vl_liquido =(
 --1- Mostrar um documento com seus produtos (através de join)
 SELECT 
 	doc.num_doc,
-	pr.nmprod AS nome_produto,
-	prdoc.vl_unid,
-	prdoc.qtd,
+	pr.nome_prod AS nome_produto,
+	prdoc.vl_un,
+	prdoc.quantidade,
 	prdoc.vl_bruto,
-	CONCAT(prdoc.vl_acres*100, '%') AS acrescimo,
-	CONCAT(prdoc.vl_desc*100, '%') AS desconto,
-	prdoc.vl_liquid_docprod
+	CONCAT(prdoc.vl_acrescimo*100, '%') AS acrescimo,
+	CONCAT(prdoc.vl_desconto*100, '%') AS desconto,
+	prdoc.vl_liquido
 FROM exerc.documento doc
 LEFT JOIN exerc.produto_doc prdoc ON prdoc.iddocumento = doc.iddocumento
 LEFT JOIN exerc.produto pr ON pr.idproduto = prdoc.idproduto
@@ -129,7 +132,7 @@ WHERE num_doc = '0001';
 
 
 --2- Mostrar lista de produtos com valor maior que 100,00
-SELECT cod_prod, nmprod, vl_venda FROM exerc.produto WHERE vl_venda > 100;
+SELECT idproduto, nome_prod, vl_venda FROM exerc.produto WHERE vl_venda > 100;
 
 --3- Mostrar um documento com o nome de cliente e o nome dos produtos
 
@@ -147,24 +150,24 @@ WHERE num_doc = '0003';
 --ATUALIZAÇÕES:
 
 --1- Alterar o nome do produto
-UPDATE exerc.produto SET nome_prod = 'Bandana' WHERE idproduto = 7;
+UPDATE exerc.produto SET nome_prod = 'Bandana' WHERE idproduto = 5;
 
 --2- Alterar o valor do produto
-UPDATE exerc.produto SET vl_venda = 50 WHERE idproduto = 7;
-UPDATE exerc.produto_doc SET vl_un = (SELECT vl_venda FROM exerc.produto WHERE idproduto = 7) WHERE idproduto = 7;
+UPDATE exerc.produto SET vl_venda = 50 WHERE idproduto = 4;
+UPDATE exerc.produto_doc SET vl_un = (SELECT vl_venda FROM exerc.produto WHERE idproduto = 4) WHERE idproduto = 4;
 UPDATE exerc.produto_doc SET vl_bruto =	
-	(vl_un * qtd) WHERE produto_prod = 7; 
-UPDATE exerc.produto_doc SET vl_liquid_docprod = 
-	((vl_bruto + (vl_bruto * vl_acres)) - (vl_bruto * vl_desc)) WHERE iddoc_prod = 7;
+	(vl_un * quantidade) WHERE idproduto = 4; 
+UPDATE exerc.produto_doc SET vl_liquido = 
+	((vl_bruto + (vl_bruto * vl_acrescimo)) - (vl_bruto * vl_desconto)) WHERE idproduto = 4;
 UPDATE exerc.produto_doc SET vl_bruto =	
-	(vl_un * qtd) WHERE iddoc_prod = 8; 
-UPDATE exerc.produto_doc SET vl_liquid_docprod = 
-	((vl_bruto + (vl_bruto * vl_acres)) - (vl_bruto * vl_desc)) WHERE iddoc_prod = 8;
+	(vl_un * quantidade) WHERE idproduto = 5; 
+UPDATE exerc.produto_doc SET vl_liquido = 
+	((vl_bruto + (vl_bruto * vl_acrescimo)) - (vl_bruto * vl_desconto)) WHERE idproduto = 5;
 	
 --3- Reajustar em 10% o valor de venda dos produtos
 UPDATE exerc.produto SET vl_venda = (vl_venda+(vl_venda*0.10));
 UPDATE exerc.produto_doc SET vl_un = (vl_un+(vl_un*0.10));
 UPDATE exerc.produto_doc SET vl_bruto =	
 	(vl_un * quantidade); 
-UPDATE exerc.produto_doc SET vl_liquid_docprod = 
-	((vl_bruto + (vl_bruto * vl_acresimo)) - (vl_bruto * vl_desc));
+UPDATE exerc.produto_doc SET vl_liquido = 
+	((vl_bruto + (vl_bruto * vl_acrescimo)) - (vl_bruto * vl_desconto));
