@@ -1,0 +1,85 @@
+create schema trabalho
+
+create table trabalho.documentos(
+	id_documentos serial primary key,
+	numero_do_documento varchar(10) unique not null,
+	data_do_documento date not null,
+	valor_total double precision not null,
+	valor_liquido double precision not null
+);	
+
+create table trabalho.produtos(
+	id_produtos serial primary key,
+	codigo_do_produto varchar(10) unique not null,
+	nome_do_produto varchar(100) not null,
+	valor_do_custo double precision not null,
+	valor_de_venda double precision not null
+);
+
+create table trabalho.venda(
+	id_venda serial primary key,
+	id_documentos int references trabalho.documentos (id_documentos),
+	id_produtos int references trabalho.produtos (id_produtos),
+	valor_unit double precision not null,
+	valor_desconto double precision,
+	valor_acrescimo double precision,
+	valor_bruto double precision,
+	valor_liquido double precision
+);
+
+insert into trabalho.documentos
+	(numero_do_documento, data_do_documento, valor_total, valor_liquido)
+values
+	('01','21-08-2023', '11', '16'),
+	('02','22-08-2023', '12', '17'),
+	('03','23-08-2023', '13', '18'),
+	('04','24-08-2023', '14', '19'),
+	('05','25-08-2023', '15', '20');
+
+insert into trabalho.produtos
+	(codigo_do_produto, nome_do_produto, valor_do_custo, valor_de_venda)
+values
+	('100','Lápis','0.5','1'),
+	('101','Fichário','51','102'),
+	('102','Apontador','0.7','3'),
+	('103','Caneta','0.8','4'),
+	('104','Papel','0.9','5');
+	
+insert into trabalho.venda
+	(id_documentos, id_produtos, valor_unit, valor_desconto, valor_acrescimo, valor_bruto)
+values
+(6, 1, 10, 3, 1, 50),
+(7, 2, 10, 5, 0, 60),
+(8, 3, 10, 30, 0, 500),
+(9, 4, 10, 0, 10, 70),
+(10, 5, 10, 12, 3, 40);
+	
+update trabalho.venda set valor_liquido = (valor_bruto + valor_acrescimo - valor_desconto)
+
+-- Consultas: 
+--1.
+select doc.numero_do_documento, doc.data_do_documento, pr.nome_do_produto from trabalho.venda v
+join trabalho.documentos doc on doc.id_documentos = v.id_documentos
+join trabalho.produtos pr on pr.id_produtos = v.id_produtos
+
+-- 2.
+
+select * from trabalho.produtos where valor_de_venda >= 100
+
+--3.
+select doc.numero_do_documento, doc.data_do_documento, pr.nome_do_produto from trabalho.venda v
+join trabalho.documentos doc on doc.id_documentos = v.id_documentos
+join trabalho.produtos pr on pr.id_produtos = v.id_produtos
+
+--Atualizações:
+--1.
+
+update trabalho.produtos set nome_do_produto = 'Novo Produto' where id_produtos = 1
+
+--2.
+
+update trabalho.produtos set valor_de_venda = '30' where id_produtos = 5
+
+--3.
+
+update trabalho.produtos set valor_de_venda = (valor_de_venda * 1.10)
