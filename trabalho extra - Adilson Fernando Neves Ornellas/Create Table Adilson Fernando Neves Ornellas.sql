@@ -1,20 +1,21 @@
---ADILSON FERNANDO NEVES ORNELLAS - TRABALHO PONTO EXTRA BANCO DE DADOS
+--                                              ADILSON FERNANDO NEVES ORNELLAS - TRABALHO PONTO EXTRA BANCO DE DADOS
 
--- CODIGO PARA CRIAR O SCHEMA 
+---------------------------------------------------------------------CODIGO PARA CRIAR O SCHEMA-----------------------------------------------------------------------
 
 	-- CREATE SCHEMA trabalhoPontoExtra
 
--- CODIGO PARA APAGAR AS TABELAS SE PRECISO
+------------------------------------------------------------- CODIGO PARA APAGAR AS TABELAS SE PRECISAR---------------------------------------------------------------
 
 -- 	DROP TABLE trabalhoPontoExtra.documento CASCADE;
 -- 	DROP TABLE trabalhoPontoExtra.produto CASCADE;
 -- 	DROP TABLE trabalhoPontoExtra.produtoDoDocumento CASCADE;
+--  DROP TABLE trabalhoPontoExtra.cliente CASCADE;
 
--- CRIANDO AS TABELAS
+----------------------------------------------------------------------- CRIANDO AS TABELAS ---------------------------------------------------------------------------
 
 	CREATE TABLE trabalhoPontoExtra.documento(
 		idDocumento serial unique not null primary key,
-		numeroDoDocumento varchar(100) not null, 
+		numeroDoDocumento varchar(100) not null,
 		dataDoDocumento date not null,
 		valorTotal double precision,
 		valorTotalLiquido double precision
@@ -38,8 +39,13 @@
 		valorBruto double precision,
 		valorLiquido double precision 
 	);
+	CREATE TABLE trabalhoPontoExtra.cliente(
+		idCliente serial unique not null primary key,
+		nomeDoCliente varchar(100) not null,
+		nomeDoProduto varchar(100)
+	);
 
--- INSERIR VALORES NAS TABELAS
+---------------------------------------------------------------- INSERIR VALORES NAS TABELAS -------------------------------------------------------------------------
 
 	INSERT INTO trabalhoPontoExtra.documento
 		(numeroDoDocumento, dataDoDocumento)
@@ -68,46 +74,91 @@
 		(3, 4, 25.00, 1, 0),
 		(4, 5, 30.00, 6, 0);
 
+	INSERT INTO trabalhoPontoExtra.cliente
+		(nomeDoCliente)
+	VALUES
+		('Adilson'),
+		('Fernado'),
+		('Neves'),
+		('Ornellas'),
+		('Ricardo');
 
--- UPDATE VALOR DO PRODUTO
-	UPDATE trabalhoPontoExtra.produtoDoDocumento
-		SET valorUnitario = 105.00
-		WHERE idProdutoDoDocumento = 1;
--- UPDATE VALOR DE ACRESCIMO 
-	UPDATE trabalhoPontoExtra.produtoDoDocumento
-		SET valorDeAcrescimo = (valorUnitario*0.10)
-		WHERE idProdutoDoDocumento <= 5;
--- UPDATE VALOR BRUTO DOS PRODUTOS 
-	UPDATE trabalhoPontoExtra.produtoDoDocumento
-		SET valorBruto = (valorUnitario*quantidade)
-		WHERE idProdutoDoDocumento <= 5;
--- UPDATE VALOR LIQUIDOS DOS PRODUTOS 
-	UPDATE trabalhoPontoExtra.produtoDoDocumento
-		SET valorLiquido = (valorBruto+(valorDeAcrescimo*quantidade))
-		WHERE idProdutoDoDocumento <= 5;
+-------------------------------------------------------------------- ATUALIZAÇÕES ------------------------------------------------------------------------
 
-	SELECT * FROM trabalhoPontoExtra.produtoDoDocumento;
+	---------------------------------TABELA PRODUTO DO DOCUMENTO -----------------------------
 
+			-- UPDATE VALOR DO PRODUTO --
+				UPDATE trabalhoPontoExtra.produtoDoDocumento
+					SET valorUnitario = 105.00
+					WHERE idProdutoDoDocumento = 1;
+			-- UPDATE VALOR DE ACRESCIMO --
+				UPDATE trabalhoPontoExtra.produtoDoDocumento
+					SET valorDeAcrescimo = (valorUnitario*0.10)
+					WHERE idProdutoDoDocumento <= 5;
+			-- UPDATE VALOR BRUTO DOS PRODUTOS --
+				UPDATE trabalhoPontoExtra.produtoDoDocumento
+					SET valorBruto = (valorUnitario*quantidade)
+					WHERE idProdutoDoDocumento <= 5;
+			-- UPDATE VALOR LIQUIDOS DOS PRODUTOS --
+				UPDATE trabalhoPontoExtra.produtoDoDocumento
+					SET valorLiquido = (valorBruto+(valorDeAcrescimo*quantidade))
+					WHERE idProdutoDoDocumento <= 5;
 
--- UPDATE DO NOME DO PRODUTO 	
-	UPDATE trabalhoPontoExtra.produto
-		SET nomeDoDocumento = 'Produto E'
-		WHERE idProduto = 5;
+				SELECT * FROM trabalhoPontoExtra.produtoDoDocumento;
 
-	SELECT * FROM trabalhoPontoExtra.produto;
+	-----------------------------------TABELA PRODUTO DO PRODUTO -------------------------------
 
--- UPDATE DO VALOR TOTAL DO PRODUTO DO DOCUMENTO 
+			-- ALTERANDO O NOME DO DOCUMENTO --
+				UPDATE trabalhoPontoExtra.produto
+					SET nomeDoDocumento = 'Produto E'
+					WHERE idProduto = 5;
 
--- UPDATE DO VALOR LIQUIDO DO PRODUTO DO DOCUMENTO
+				SELECT * FROM trabalhoPontoExtra.produto;
+			
+	-------------------------------------TABELA PRODUTO DO DOCUMENTO ------------------------------
 
--- MOSTRAR UM DOCUMENTO COM OS SEUS PRODUTOS (ATRAVÉS DO JOIN)
+			-- UPDATE DO VALOR TOTAL DO PRODUTO DO DOCUMENTO --
+				UPDATE trabalhoPontoExtra.documento
+					SET valorTotal = (
+						SELECT trabalhoPontoExtra.produtoDoDocumento.valorBruto
+						FROM trabalhoPontoExtra.produtoDoDocumento
+						WHERE produtoDoDocumento.idProdutoDoDocumento = trabalhoPontoExtra.documento.idDocumento
+					)
+					WHERE idDocumento = trabalhoPontoExtra.documento.idDocumento;
 
+			-- UPDATE DO VALOR LIQUIDO DO PRODUTO DO DOCUMENTO --
+				UPDATE trabalhoPontoExtra.documento
+					SET valorTotalLiquido = (
+						SELECT trabalhoPontoExtra.produtoDoDocumento.valorLiquido
+						FROM trabalhoPontoExtra.produtoDoDocumento
+						WHERE produtoDoDocumento.idProdutoDoDocumento = trabalhoPontoExtra.documento.idDocumento
+					)
+					WHERE idDocumento = trabalhoPontoExtra.documento.idDocumento;
 
--- MOSTRAR LISTA DE PRODUTOS COM VALOR MAIOR QUE 100,00
-	SELECT *
-	FROM trabalhoPontoExtra.produtoDoDocumento
-	WHERE valorUnitario  >= 100.00;
-		
--- MOSTRAR UM DOCUMENTO COM O NOME DE CLIENTE E O NOME DOS PREÇOS
+				SELECT * FROM trabalhoPontoExtra.documento
 
+------------------------------------------------------------------------------- CONSULTAS ----------------------------------------------------------------------------
 
+		-- MOSTRAR UM DOCUMENTO COM OS SEUS PRODUTOS (ATRAVÉS DO JOIN) --
+			SELECT documento.numeroDoDocumento, produto.codigoDoDocumento, produto.nomeDoDocumento, produtoDoDocumento.quantidade, produtoDoDocumento.valorUnitario
+				FROM trabalhoPontoExtra.documento
+				JOIN trabalhoPontoExtra.produtoDoDocumento ON documento.idDocumento = produtoDoDocumento.idDocumento
+				JOIN trabalhoPontoExtra.produto ON produtoDoDocumento.idProduto = produto.idProduto;
+
+		-- MOSTRAR LISTA DE PRODUTOS COM VALOR MAIOR QUE 100,00 --
+			SELECT * FROM trabalhoPontoExtra.produtoDoDocumento
+				WHERE valorUnitario  >= 100.00;
+
+		-- MOSTRAR UM DOCUMENTO COM O NOME DE CLIENTE E O NOME DOS PRODUTOS --
+			UPDATE trabalhoPontoExtra.cliente
+				SET nomeDoProduto = (
+					SELECT trabalhoPontoExtra.produto.nomeDoDocumento
+					FROM trabalhoPontoExtra.produto
+					WHERE produto.idProduto = trabalhoPontoExtra.cliente.idCliente
+				)
+				WHERE idCliente = trabalhoPontoExtra.cliente.idCliente;
+
+			SELECT * FROM trabalhoPontoExtra.cliente;
+			
+			
+------------------------------------------------------------------------------------------------------------------------------------------------------------
